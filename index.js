@@ -5,6 +5,7 @@ import cors from "cors";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { connectDb } from "./utils/connect-db.js";
+import QuizMode from "./socket/quiz.js";
 
 const app = express();
 const server = createServer(app);
@@ -16,6 +17,9 @@ app.use(cors());
 connectDb();
 
 route(app);
+
+// Socket connections
+QuizMode(io);
 
 server.listen(process.env.PORT, () => {
   console.log(`Server online on port ${process.env.PORT}`);
