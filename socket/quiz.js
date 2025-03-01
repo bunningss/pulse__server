@@ -24,8 +24,11 @@ export default function QuizMode(io) {
 
       try {
         await game.save();
-        socket.join(code);
-        socket.emit("game-created", { code, message: "Game created." });
+        socket.join(Number(code));
+        socket.emit("game-created", {
+          code,
+          message: `Host is in room ${code}`,
+        });
       } catch (error) {
         console.log(error);
         socket.emit("error", { message: "Failed to create game" });
@@ -44,6 +47,8 @@ export default function QuizMode(io) {
           score: 0,
         });
 
+        await player.save();
+
         game.players.push(player._id);
         await game.save();
 
@@ -51,9 +56,10 @@ export default function QuizMode(io) {
           .populate("players")
           .lean();
 
-        socket.join(gameCode);
-        socket.emit("player-joined", {
-          message: `${username} joined the game.`,
+        socket.join(Number(gameCode));
+
+        quiz.to(gameCode).emit("player-joined", {
+          message: `${socket.id} joined the game.`,
           code: gameCode,
           players: updatedGame.players,
         });
