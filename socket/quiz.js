@@ -59,7 +59,7 @@ export default function QuizMode(io) {
         socket.join(Number(gameCode));
 
         quiz.to(gameCode).emit("player-joined", {
-          message: `${socket.id} joined the game.`,
+          message: `${username} joined the game.`,
           code: gameCode,
           players: updatedGame.players,
         });
