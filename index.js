@@ -21,6 +21,8 @@ route(app);
 // Socket connections
 QuizMode(io);
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server online on port ${process.env.PORT}`);
+const port = process.env.PORT || 5000;
+
+server.listen(port, () => {
+  console.log(`Server online on port ${port}`);
 });
