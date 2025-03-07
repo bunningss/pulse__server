@@ -10,6 +10,11 @@ const playerSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  isHost: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 const Player = mongoose.models.player || mongoose.model("player", playerSchema);

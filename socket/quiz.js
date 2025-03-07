@@ -22,12 +22,21 @@ export default function QuizMode(io) {
         currentQuestionIndex: 0,
       });
 
+      const player = new Player({
+        name: "game-host",
+        score: 0,
+        isHost: true,
+      });
+
       try {
+        game.players.push(player._id);
+        await player.save();
         await game.save();
         socket.join(Number(code));
         socket.emit("game-created", {
           code,
           message: `Host is in room ${code}`,
+          currentPlayer: "game-host",
         });
       } catch (error) {
         console.log(error);
@@ -45,6 +54,7 @@ export default function QuizMode(io) {
         const player = new Player({
           name: username,
           score: 0,
+          isHost: false,
         });
 
         await player.save();
@@ -61,6 +71,7 @@ export default function QuizMode(io) {
         quiz.to(gameCode).emit("player-joined", {
           message: `${username} joined the game.`,
           code: gameCode,
+          currentPlayer: username,
           players: updatedGame.players,
         });
       } catch (error) {
