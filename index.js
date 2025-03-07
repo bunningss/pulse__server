@@ -9,10 +9,20 @@ import QuizMode from "./socket/quiz.js";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ALLOWED_ORIGIN,
+    methods: ["GET", "POST"],
+  },
+});
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ALLOWED_ORIGIN,
+    credentials: true,
+  })
+);
 
 connectDb();
 
