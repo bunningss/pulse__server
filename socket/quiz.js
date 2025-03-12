@@ -32,10 +32,11 @@ export default function QuizMode(io) {
         game.players.push(player._id);
         await player.save();
         await game.save();
+
         socket.join(Number(code));
         socket.emit("game-created", {
           code,
-          message: `Host is in room ${code}`,
+          message: `Game Created. Game code: ${code}`,
           currentPlayer: "game-host",
         });
       } catch (error) {
@@ -77,6 +78,27 @@ export default function QuizMode(io) {
       } catch (error) {
         console.log(error);
         socket.emit("join-error", { message: "Failed to join game." });
+      }
+    });
+
+    // Game start
+    socket.on("start-game", async ({ code }) => {
+      try {
+        console.log("game code is: ", code);
+        const game = await Game.findOne({ code });
+        if (!game) {
+          return socket.emit("error", { message: "Game not found" });
+        }
+
+        game.isStarted = true;
+        await game.save();
+
+        quiz.to(Number(code)).emit("game-started", {
+          message: "Game starting. Please wait.",
+        });
+      } catch (error) {
+        console.log(error);
+        socket.emit("error", { message: "Failed to start game" });
       }
     });
   });
