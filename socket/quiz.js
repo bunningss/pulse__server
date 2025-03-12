@@ -50,7 +50,8 @@ export default function QuizMode(io) {
       try {
         const game = await Game.findOne({ code: gameCode });
 
-        if (!game) return quiz.emit("error", { message: "Invalid game PIN." });
+        if (!game)
+          return socket.emit("error", { message: "Invalid game PIN." });
 
         const player = new Player({
           name: username,
@@ -77,7 +78,7 @@ export default function QuizMode(io) {
         });
       } catch (error) {
         console.log(error);
-        socket.emit("join-error", { message: "Failed to join game." });
+        socket.emit("error", { message: "Failed to join game." });
       }
     });
 
