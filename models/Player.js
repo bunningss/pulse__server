@@ -15,6 +15,10 @@ const playerSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  socketId: {
+    type: String,
+    required: true,
+  },
 });
 
 const Player = mongoose.models.player || mongoose.model("player", playerSchema);
