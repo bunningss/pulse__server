@@ -7,6 +7,7 @@ export default function QuizMode(io) {
 
   quiz.on("connection", (socket) => {
     console.log(`user ${socket.id} connected`);
+
     // create game
     socket.on("create-game", async ({ host, questionId }) => {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -20,6 +21,7 @@ export default function QuizMode(io) {
         questions: topic?.questions,
         isStarted: false,
         currentQuestionIndex: 0,
+        currentQuestion: topic?.questions[0],
       });
 
       const player = new Player({
@@ -92,15 +94,76 @@ export default function QuizMode(io) {
 
         game.isStarted = true;
         await game.save();
-        console.log(game);
+
+        // Emit the first question
         quiz.to(Number(code)).emit("game-started", {
           message: "Game starting. Please wait.",
-          questions: game.questions,
+          question: game.currentQuestion,
         });
+
+        // Start the timer for the first question
+        startQuestionTimer(code, game, game.currentQuestion.time);
       } catch (error) {
         console.log(error);
         socket.emit("error", { message: "Failed to start game" });
       }
     });
+
+    // Function to start the question timer
+    const startQuestionTimer = async (code, game, time) => {
+      const qTimer = time * 1000;
+
+      // Interval to send the current question every 10 seconds
+      const questionInterval = setInterval(() => {
+        quiz.to(Number(code)).emit("current-question", {
+          question: game.currentQuestion,
+        });
+      }, 10000);
+
+      const timer = setTimeout(async () => {
+        try {
+          // Clear the interval when the question changes
+          clearInterval(questionInterval);
+
+          // Increment the question index
+          const updatedGame = await Game.findOneAndUpdate(
+            { _id: game._id },
+            { $inc: { currentQuestionIndex: 1 } },
+            { new: true }
+          );
+
+          // Check if there are more questions
+          if (updatedGame.currentQuestionIndex < updatedGame.questions.length) {
+            // Update the current question
+            updatedGame.currentQuestion =
+              updatedGame.questions[updatedGame.currentQuestionIndex];
+            await updatedGame.save();
+
+            // Emit the next question
+            quiz.to(Number(code)).emit("next-question", {
+              currentQuestionIndex: updatedGame.currentQuestionIndex,
+              question: updatedGame.currentQuestion,
+            });
+
+            // Start the timer for the next question
+            startQuestionTimer(
+              code,
+              updatedGame,
+              updatedGame.questions[updatedGame.currentQuestionIndex].time
+            );
+          } else {
+            // No more questions, end the game
+            quiz.to(Number(code)).emit("game-ended", {
+              message: "Game over!",
+            });
+          }
+        } catch (error) {
+          console.log(error);
+          quiz
+            .to(Number(code))
+            .emit("error", { message: "Failed to move to the next question" });
+        }
+      }, qTimer);
+    };
   });
 }

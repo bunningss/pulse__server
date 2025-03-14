@@ -26,6 +26,10 @@ const gameSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  currentQuestion: {
+    type: Schema.Types.Mixed,
+    required: true,
+  },
   currentQuestionIndex: {
     type: Number,
     default: 0,
