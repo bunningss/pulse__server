@@ -85,7 +85,6 @@ export default function QuizMode(io) {
     // Game start
     socket.on("start-game", async ({ code }) => {
       try {
-        console.log("game code is: ", code);
         const game = await Game.findOne({ code });
         if (!game) {
           return socket.emit("error", { message: "Game not found" });
@@ -93,9 +92,10 @@ export default function QuizMode(io) {
 
         game.isStarted = true;
         await game.save();
-
+        console.log(game);
         quiz.to(Number(code)).emit("game-started", {
           message: "Game starting. Please wait.",
+          questions: game.questions,
         });
       } catch (error) {
         console.log(error);

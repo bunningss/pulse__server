@@ -14,11 +14,23 @@ const questionSchema = new mongoose.Schema({
       options: [
         {
           type: String,
+          required: true,
+          lowercase: true,
         },
       ],
       correctAnswer: {
         type: String,
         required: true,
+        lowercase: true,
+      },
+      time: {
+        type: Number,
+        required: true,
+        default: 10,
+      },
+      image: {
+        type: String,
+        required: false,
       },
     },
   ],
